@@ -3,9 +3,9 @@
 close all
 clear 
 %--------------------------Set Path Specs, ID Vars------------------------%
-FolderPath = 'C:\Users\seanm\Desktop\garcia_lab_stuff\kruppel_eve2\dat\Kruppel_eve2_A\';
+FolderPath = 'C:\Users\seanm\Desktop\garcia_lab_stuff\kruppel_eve2\dat\Kruppel_eve2_C\';
 % FolderPath = 'D:/Data/Nick/LivemRNA/LivemRNAFISH/Dropbox (Garcia Lab)/mHMM/weka/';
-project = 'Kruppel_eve2_A'; %Project Identifier
+project = 'Kruppel_eve2_C'; %Project Identifier
 %%% folders
 fig_path = ['../fig/experimental_system/' project '/preprocessing/'];
 data_path = ['../dat/' project '/']; % data mat directory
@@ -287,7 +287,7 @@ for s = 1:length(set_vec)
         tr_col = tr_col(~ismember(rm_vec,[row_ind col_ind]));                
     end    
     cat_fields = {'fluo','fluo3','fluo5','time','ap_vector','xPos','yPos'...
-                    'cp_frames','all_frames'};
+                    'cp_frames','all_frames','protein'};
     for j = 1:length(tr_col)
         ID1 = min(tr_col(j),tr_row(j)); % keep earlier as base
         ID2 = max(tr_col(j),tr_row(j));

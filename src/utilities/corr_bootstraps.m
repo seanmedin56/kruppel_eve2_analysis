@@ -32,12 +32,12 @@ function [stds,stds1,stds2] = corr_bootstraps(trace1, trace2, max_delay, num_tim
             vals{j}(i) = corr(j);
         end
         
-        corr_1st_deriv = corr(2:max_delay) - corr(1:max_delay-1);
+        corr_1st_deriv = corr(2:end) - corr(1:end-1);
         for j = 1:length(corr_1st_deriv)
             first{j}(i) = corr_1st_deriv(j);
         end
         
-        corr_2nd_deriv = corr_1st_deriv(2:max_delay-1) - corr_1st_deriv(1:max_delay-2);
+        corr_2nd_deriv = corr_1st_deriv(2:end) - corr_1st_deriv(1:end-1);
         for j = 1:length(corr_2nd_deriv)
             second{j}(i) = corr_2nd_deriv(j);
         end
