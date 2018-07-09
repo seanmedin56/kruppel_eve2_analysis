@@ -12,7 +12,7 @@ FOV_edge_padding = 10; % pixels
 %------------------------Import Raw Trace Set------------------------%
 %ID's of sets to include
 include_vec = [1];
-project = 'Kruppel_eve2_C';
+project = 'Kruppel_eve2_A';
 print_traces = 1; %Output PNG files for traces?
 
 %---------------------------Set Paths-------------------------------------%

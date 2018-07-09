@@ -3,9 +3,9 @@
 close all
 clear 
 %--------------------------Set Path Specs, ID Vars------------------------%
-FolderPath = 'C:\Users\seanm\Desktop\garcia_lab_stuff\kruppel_eve2\dat\Kruppel_eve2_C\';
+FolderPath = 'C:\Users\seanm\Desktop\garcia_lab_stuff\kruppel_eve2\dat\Kruppel_eve2_A\';
 % FolderPath = 'D:/Data/Nick/LivemRNA/LivemRNAFISH/Dropbox (Garcia Lab)/mHMM/weka/';
-project = 'Kruppel_eve2_C'; %Project Identifier
+project = 'Kruppel_eve2_A'; %Project Identifier
 %%% folders
 fig_path = ['../fig/experimental_system/' project '/preprocessing/'];
 data_path = ['../dat/' project '/']; % data mat directory
