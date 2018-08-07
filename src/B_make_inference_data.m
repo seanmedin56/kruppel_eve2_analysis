@@ -11,9 +11,9 @@ max_bin_size = 3;
 FOV_edge_padding = 10; % pixels
 %------------------------Import Raw Trace Set------------------------%
 %ID's of sets to include
-include_vec = [1];
-project = 'Kruppel_eve2_A';
-print_traces = 1; %Output PNG files for traces?
+include_vec = 1:3;
+project = 'Kruppel_eve2_pass1';
+print_traces = 0; %Output PNG files for traces?
 
 %---------------------------Set Paths-------------------------------------%
 TracePath = ['../dat/' project '/' 'raw_traces_01' project '.mat'];
@@ -51,11 +51,11 @@ for i = 1:length(trace_struct)
     trace1 = temp.fluo; %Load full trace, including intervening NaN's
     trace3 = temp.fluo3; %3 slice trace should be identical to single in presence/absence
     protein = temp.protein; % full protein trace including NaNs
-    if isnan(protein(end))
-        protein(end) = 0;
-    end
-    if isnan(protein(1))
-        protein(1) = 0;
+    nuc = nucleus_struct([nucleus_struct.Nucleus] == temp.Nucleus);
+    
+    % skips trace if they get too close to the edge
+    if sum([nuc.xPos] < 20 | [nuc.xPos] > 492 | [nuc.yPos] < 20 | [nuc.yPos] > 492) > 0
+        continue;
     end
     time = temp.time;      
     quality_flag = 1;
@@ -189,7 +189,14 @@ rm_counts = 0;
 pixel_per_ap_vec = unique([trace_struct_final.PixelperAP]);
 set_vec = unique([trace_struct_final.setID]);
 for i = 1:length(nucleus_struct)
+    
     temp = nucleus_struct(i);
+    nuc = nucleus_struct([nucleus_struct.Nucleus] == temp.Nucleus);
+    
+    % skips trace if they get too close to the edge
+    if sum([nuc.xPos] < 20 | [nuc.xPos] > 492 | [nuc.yPos] < 20 | [nuc.yPos] > 492) > 0
+        continue;
+    end
     setID = temp.setID;
     lt = last_times(include_vec==setID);
     nc_times = temp.time;         
@@ -282,23 +289,23 @@ for i = 1:length(trace_struct_final)
         error('Inconsistent Identifiers')
     end   
 %     trace_struct_final(i).inference_flag = trace_struct_final(i).inference_flag && nc_quality;
-    fluo = trace_struct_final(i).fluo_interp;
-    time = trace_struct_final(i).time_interp;
-    ap_vec = trace_struct_final(i).rel_ap_vector_interp;
-    ap_shift_flag = abs(sum(diff(trace_struct_final(i).rel_ap_vector))) < 4;
-    % start time screens
-    start_jump_flag = fluo(1) < jump_threshold1; % traces that start bright are suspect
-    start_nc_flag = time(1) ~= nucleus_struct_final(ncID).time_interp(1);
-    start_early_flag = time(1) < 15*60;
-    trace_struct_final(i).on_time_flag = start_jump_flag&&start_nc_flag&&start_early_flag;
-    % stop time screens
-    stop_jump_flag = ~(fluo(end) > jump_threshold1 && time(end) < time_ceiling); % only problematic when both are true
-    stop_nc_flag = ~(time(end) == nucleus_struct_final(ncID).time_interp(end)&& ...
-                        time(end) < time_ceiling);
-    trace_struct_final(i).off_time_flag = stop_jump_flag&&stop_nc_flag;
-    trace_struct_final(i).ap_shift_flag = ap_shift_flag;
-    trace_struct_final(i).on_off_time_flag = start_jump_flag&&stop_jump_flag&&...
-                            start_nc_flag&&stop_nc_flag&&ap_shift_flag;
+%     fluo = trace_struct_final(i).fluo_interp;
+%     time = trace_struct_final(i).time_interp;
+%     ap_vec = trace_struct_final(i).rel_ap_vector_interp;
+%     ap_shift_flag = abs(sum(diff(trace_struct_final(i).rel_ap_vector))) < 4;
+%     % start time screens
+%     start_jump_flag = fluo(1) < jump_threshold1; % traces that start bright are suspect
+%     start_nc_flag = time(1) ~= nucleus_struct_final(ncID).time_interp(1);
+%     start_early_flag = time(1) < 15*60;
+%     trace_struct_final(i).on_time_flag = start_jump_flag&&start_nc_flag&&start_early_flag;
+%     % stop time screens
+%     stop_jump_flag = ~(fluo(end) > jump_threshold1 && time(end) < time_ceiling); % only problematic when both are true
+%     stop_nc_flag = ~(time(end) == nucleus_struct_final(ncID).time_interp(end)&& ...
+%                         time(end) < time_ceiling);
+%     trace_struct_final(i).off_time_flag = stop_jump_flag&&stop_nc_flag;
+%     trace_struct_final(i).ap_shift_flag = ap_shift_flag;
+%     trace_struct_final(i).on_off_time_flag = start_jump_flag&&stop_jump_flag&&...
+%                             start_nc_flag&&stop_nc_flag&&ap_shift_flag;
 end
 
 

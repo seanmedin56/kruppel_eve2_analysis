@@ -3,9 +3,9 @@
 close all
 clear 
 %--------------------------Set Path Specs, ID Vars------------------------%
-FolderPath = 'C:\Users\seanm\Desktop\garcia_lab_stuff\kruppel_eve2\dat\Kruppel_eve2_A\';
+FolderPath = 'C:\Users\seanm\Desktop\garcia_lab_stuff\kruppel_eve2\dat\Kruppel_eve2_pass1\';
 % FolderPath = 'D:/Data/Nick/LivemRNA/LivemRNAFISH/Dropbox (Garcia Lab)/mHMM/weka/';
-project = 'Kruppel_eve2_A'; %Project Identifier
+project = 'Kruppel_eve2_pass1'; %Project Identifier
 %%% folders
 fig_path = ['../fig/experimental_system/' project '/preprocessing/'];
 data_path = ['../dat/' project '/']; % data mat directory
@@ -21,8 +21,8 @@ mkdir(data_path);
 mkdir([ap_pos_path '/stripe_fits']);
 mkdir(fluo_path);
 %%% cleaning params
-keyword = 'eve2'; % Keyword to ensure only sets from current project are pulled
-include_vec = [1]; %data set numbers to include
+keyword = 'Eve2'; % Keyword to ensure only sets from current project are pulled
+include_vec = [1:3]; %data set numbers to include
 % show_ap_fit_figs = 0;
 snippet_size = 15; % particles within snippet/2+1 are at risk for tracking issues
 % pre_post_padding = 10; % max mun frames for which nucleus can be MIA at start or end
@@ -127,10 +127,16 @@ for i = 1:length(cp_filenames) % Loop through filenames
     particles = raw_data.CompiledParticles; % extract particle set
     prots = protein_data.CompiledNuclei;
     j_init = j_pass;
-    for j = 1:size(traces_clean,2)        
+    for j = 1:size(traces_clean,2)  
+
         raw_trace = traces_clean(:,j);     
-        trace_start = find(~isnan(raw_trace),1);
-        trace_stop = find(~isnan(raw_trace),1,'last');        
+        schnitz = particles(j).schnitz;
+        prot_nuc = prots([prots.schnitz] == schnitz);
+        if prot_nuc.Frames(end) < first_frame
+            continue
+        end
+        trace_start = max(prot_nuc.Frames(1) - first_frame + 1,1);%find(~isnan(raw_trace),1);
+        trace_stop = prot_nuc.Frames(end)- first_frame + 1;%find(~isnan(raw_trace),1,'last');        
         %Creat versions with all intervening frames present (missing frames
         %appear as NaNs
         trace_full = raw_trace(trace_start:trace_stop)';               
@@ -355,7 +361,7 @@ g_kernel(r_mat>kernel_radius) = 0;
 %%% fitting parameters
 min_mat_time = 30*60; % Minimum time for appearance of mature stripe
 xDim = 512; % FOV x size in pixels
-yDim = 256;
+yDim = 512;
 search_kernel_width = 2.0; % Size of summation bin to use for optimization
 new_trace_struct = []; % Store trace results 
 new_nucleus_struct = []; % Store nucleus results
