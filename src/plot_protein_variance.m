@@ -60,5 +60,14 @@ ylabel('mean fluorescence distance');
 % plots histogram of distance between adjacent time points for each set
 for set = sets_to_use
     adj_points = [];
+    trace_struct_set = trace_struct_final([trace_struct_final.setID] == set);
+    for trace = trace_struct_set
+        adj_points = [adj_points diff(trace.protein_interp)];
+    end
+    figure();
+    histogram(adj_points);
+    title(['Adjacent Times Fluo Distribution Set ' num2str(set)]);
+    display(mean(adj_points));
+    display(std(adj_points));
 end
 

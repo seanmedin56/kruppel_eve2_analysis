@@ -54,9 +54,12 @@ for i = 1:length(trace_struct)
     nuc = nucleus_struct([nucleus_struct.Nucleus] == temp.Nucleus);
     
     % skips trace if they get too close to the edge
-    if sum([nuc.xPos] < 20 | [nuc.xPos] > 492 | [nuc.yPos] < 20 | [nuc.yPos] > 492) > 0
+    if sum([nuc.xPos] < 20 | [nuc.xPos] > 492 | ...
+            [nuc.yPos] < 20 | [nuc.yPos] > 492) + sum([temp.xPos] < 20 |...
+            [temp.yPos] < 20 | [temp.xPos] > 492 | [temp.yPos] > 492) > 0
         continue;
     end
+
     time = temp.time;      
     quality_flag = 1;
     if sum(~isnan(trace1)) < min_dp
@@ -250,8 +253,8 @@ for i = 1:length(nucleus_struct)
     if ~isnan(ParticleID)
         trace_ind = find(trace_particle_vec==ParticleID);
         if isempty(trace_ind) % catch cases in which particle has been removed for QC reasons
-            error('Inconsistent indexing between Trace and Nucelus Structures')
-            trace_ind = NaN;
+            %error('Inconsistent indexing between Trace and Nucelus Structures')
+            %trace_ind = NaN;
         else
             ncIDCheck = trace_struct_final(trace_ind).ncID;
             if ncIDCheck ~= temp.ncID
@@ -280,14 +283,14 @@ end
 % trace index vec
 nucleus_trace_vec = [nucleus_struct_final.TraceIndex];
 mismatches = 0;
-for i = 1:length(trace_struct_final)
-    lt = last_times(include_vec==trace_struct_final(i).setID);
-    ParticleID = trace_struct_final(i).ParticleID;
-    ncID = find(nucleus_trace_vec==i);
-    pIDCross = nucleus_struct_final(ncID).ParticleID;
-    if pIDCross ~= ParticleID
-        error('Inconsistent Identifiers')
-    end   
+% for i = 1:length(trace_struct_final)
+%     lt = last_times(include_vec==trace_struct_final(i).setID);
+%     ParticleID = trace_struct_final(i).ParticleID;
+%     ncID = find(nucleus_trace_vec==i);
+%     pIDCross = nucleus_struct_final(ncID).ParticleID;
+%     if pIDCross ~= ParticleID
+%         error('Inconsistent Identifiers')
+%     end   
 %     trace_struct_final(i).inference_flag = trace_struct_final(i).inference_flag && nc_quality;
 %     fluo = trace_struct_final(i).fluo_interp;
 %     time = trace_struct_final(i).time_interp;
@@ -306,7 +309,7 @@ for i = 1:length(trace_struct_final)
 %     trace_struct_final(i).ap_shift_flag = ap_shift_flag;
 %     trace_struct_final(i).on_off_time_flag = start_jump_flag&&stop_jump_flag&&...
 %                             start_nc_flag&&stop_nc_flag&&ap_shift_flag;
-end
+%end
 
 
 % save

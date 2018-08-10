@@ -19,12 +19,15 @@ time_step = 180; % must be >= 60 seconds
 KrMov_final = KrMov_final';
 ap_bin_bounds = 200:10 * ap_step:600;
 fixed_kr_mat = zeros(length(ap_bin_bounds), 3600 / time_step);
+fixed_kr_std = zeros(length(ap_bin_bounds), 3600 / time_step);
 ap_idx = 1;
 for ap = ap_bin_bounds
     start = 1;
     time_idx = 1;
     while start < 60
-        fixed_kr_mat(ap_idx, time_idx) = sum(sum(KrMov_final(ap:ap + 10*ap_step-1,start:start+2)));
+        vals_to_sum = KrMov_final(ap:ap + 10*ap_step-1,start:start+2);
+        fixed_kr_mat(ap_idx, time_idx) = mean(vals_to_sum(:));
+        fixed_kr_std(ap_idx, time_idx) = std(vals_to_sum(:));
         start = start + 3;
         time_idx = time_idx + 1;
     end
@@ -68,6 +71,7 @@ for set = sets_to_use
     
     % but first forms matrix of live kruppel data
     live_kr_mat = zeros(length(ap_bins),length(time_bins));
+    live_kr_std = zeros(length(ap_bins),length(time_bins));
     ap_idx = 1;
     max_time = length(time_bins);
     min_time = 1;
@@ -75,22 +79,28 @@ for set = sets_to_use
         trace = consolidated_fluo([consolidated_fluo.ap] == ap ...
             & [consolidated_fluo.set] == set);
         live_kr_mat(ap_idx,1:end) = trace.fluo;
+        live_kr_std(ap_idx,1:end) = trace.std_fluo;
         nonzero = find(trace.fluo ~= 0);
         max_time = min(nonzero(end), max_time);
         min_time = max(nonzero(1), min_time);
         ap_idx = ap_idx + 1;
     end
     live_kr_mat = live_kr_mat(1:end, min_time:max_time);
+    live_kr_std = live_kr_std(1:end, min_time:max_time);
     [best_mat,best_scalar,row,col] = get_best_scaled_sub_mat(live_kr_mat, ...
         fixed_kr_mat);
+    best_std = fixed_kr_std(row:row+size(live_kr_mat,1)-1, ... 
+        col:col+size(live_kr_mat,2)-1) * best_scalar;
     display(row);
     display(col);
     start_ap = 4;
-    for ap = [-3, 0, 3, 6, 9]
+    for ap = [-3, 1, 5, 9]
         figure();
-        plot(live_kr_mat(ap + start_ap,:));
+        %plot(live_kr_mat(ap + start_ap,:));
+        errorbar(live_kr_mat(ap + start_ap,:),live_kr_std(ap + start_ap,:));
         hold on
-        plot(best_mat(ap + start_ap,:));
+        %plot(best_mat(ap + start_ap,:));
+        errorbar(best_mat(ap + start_ap,:), best_std(ap+start_ap,:));
         title(['Set ' num2str(set) '. AP ' num2str(ap)]);
         xlabel('time steps');
         ylabel('adjusted fluorescence');

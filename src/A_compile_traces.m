@@ -64,6 +64,7 @@ nucleus_struct = []; % structure to store nucleis info
 %%% compile traces and nuclei from across experimental sets
 j_pass = 0; % indexing variable to keep track of iterations
 total_matched = 0;
+sets = struct; % keeps track of time and nuclei data for when I add silent nuclei
 for i = 1:length(cp_filenames) % Loop through filenames    
     % read in raw files
     load([FolderPath ap_filenames{i}]) % AP Info   
@@ -90,6 +91,9 @@ for i = 1:length(cp_filenames) % Loop through filenames
     traces_clean = traces_raw(first_frame:end,:);
     time_clean = time_raw(first_frame:end);    
     time_clean = time_clean - min(time_clean); % Normalize to start of nc14
+    sets(i).time_clean = time_clean;
+    sets(i).protein_data = protein_data;
+    sets(i).set = setID;
     frames_clean = frames_raw(first_frame:end);    
     % compile nucleus info
     s_cells = struct;
@@ -108,7 +112,8 @@ for i = 1:length(cp_filenames) % Loop through filenames
             s_cells(e_pass).yPosParticle = NaN;
             s_cells(e_pass).frames = nc14_frames';
             s_cells(e_pass).N = length(nc14_frames);
-            s_cells(e_pass).Nucleus = e;                        
+            s_cells(e_pass).Nucleus = e;         
+            s_cells(e_pass).APpos = schnitzcells(e).APpos;
             s_cells(e_pass).ncID = eval([num2str(setID) '.' sprintf('%04d',e)]);
             %Will be set to mean particle position for nuclei with matiching
             %particles
@@ -225,6 +230,44 @@ end
 for i = 1:length(nucleus_struct) % assign NaNs for ParticleID to silent nuclei
     if isempty(nucleus_struct(i).ParticleID)
         nucleus_struct(i).ParticleID = NaN;
+        same_source = trace_struct([trace_struct.setID] == nucleus_struct(i).setID);
+        rel_set = sets([sets.set] == nucleus_struct(i).setID);
+        % add silent nuclei to traces
+        j_pass = j_pass + 1;
+        
+        trace_struct(j_pass).APAngle = same_source.APAngle;
+        first_frame = same_source.nc14;
+        usable_frames = find(nucleus_struct(i).frames >= first_frame);
+        all_frames = nucleus_struct(i).frames(nucleus_struct(i).frames >= first_frame);
+        trace_struct(j_pass).all_frames = all_frames;
+        trace_struct(j_pass).cp_frames = all_frames;
+        trace_struct(j_pass).nc14 = first_frame;
+        trace_struct(j_pass).last_frame = same_source.last_frame;        
+        trace_struct(j_pass).xPos = nucleus_struct(i).xPos(usable_frames);
+        trace_struct(j_pass).yPos = nucleus_struct(i).yPos(usable_frames);
+        trace_struct(j_pass).ap_vector = nucleus_struct(i).APpos(usable_frames);
+        trace_struct(j_pass).fluo = zeros([1, length(all_frames)]);
+        trace_struct(j_pass).fluo3 = zeros([1, length(all_frames)]);
+        trace_struct(j_pass).fluo5 = zeros([1, length(all_frames)]);
+        trace_struct(j_pass).time = rel_set.time_clean(all_frames - first_frame + 1);
+        trace_struct(j_pass).schnitz = nucleus_struct(i).Nucleus;
+        % adds protein fluorescence content
+        prots = rel_set.protein_data.CompiledNuclei;
+        prot_nuc = prots([prots.schnitz] == nucleus_struct(i).Nucleus);
+        start_prot = find(prot_nuc.Frames == all_frames(1));
+        trace_struct(j_pass).protein = transpose(prot_nuc.FluoMax(start_prot:start_prot + length(all_frames) - 1));
+        trace_struct(j_pass).FluoError = NaN; %Estimated error in bkg subtraction     
+        % For nuclei corresponding to particles, add fluo info and revise
+        % mean position to align with particle pos
+        % Identifier variables        
+        trace_struct(j_pass).Nucleus = nucleus_struct(i).Nucleus;
+        ncID = eval([num2str(nucleus_struct(i).setID) '.' ...
+            sprintf('%04d',nucleus_struct(i).Nucleus)]);
+        trace_struct(j_pass).ncID = ncID;
+                   
+        trace_struct(j_pass).ParticleID = NaN;
+        trace_struct(j_pass).setID = nucleus_struct(i).setID;
+        trace_struct(j_pass).source_path = same_source.source_path;  
     end
 end
 
@@ -333,20 +376,21 @@ for s = 1:length(set_vec)
         match_indices = [match_indices ID1];
     end        
 end
+% doesn't work when including silent nuclei
 
-% remove extra entries
-index_vector = 1:length(trace_struct);
-nc_particles = [nucleus_struct.ParticleID];
-tr_particles = [trace_struct.ParticleID];
-trace_struct = trace_struct(~ismember(index_vector,[remove_indices dupe_indices]));
-rm_particles = tr_particles([remove_indices dupe_indices]);
-for i = 1:length(rm_particles)
-    nucleus_struct(nc_particles==rm_particles(i)).ParticleID = NaN;
-    nucleus_struct(i).xMean = mean(nucleus_struct(i).xPos);
-    nucleus_struct(i).yMean = mean(nucleus_struct(i).yPos);
-    nucleus_struct(i).xPosParticle = [];
-    nucleus_struct(i).yPosParticle = [];
-end
+% % remove extra entries
+% index_vector = 1:length(trace_struct);
+% nc_particles = [nucleus_struct.ParticleID];
+% tr_particles = [trace_struct.ParticleID];
+% trace_struct = trace_struct(~ismember(index_vector,[remove_indices dupe_indices]));
+% rm_particles = tr_particles([remove_indices dupe_indices]);
+% for i = 1:length(rm_particles)
+%     nucleus_struct(nc_particles==rm_particles(i)).ParticleID = NaN;
+%     nucleus_struct(i).xMean = mean(nucleus_struct(i).xPos);
+%     nucleus_struct(i).yMean = mean(nucleus_struct(i).yPos);
+%     nucleus_struct(i).xPosParticle = [];
+%     nucleus_struct(i).yPosParticle = [];
+% end
 %%
 %%% ------------------------ Find Stripe Centers ---------------------- %%%
 %%% Smoothing Kernel
