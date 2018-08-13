@@ -1,5 +1,5 @@
 function [trace] = gillespie_gen_krup(elong_time, time_res, points_per_trace, ...
-                              krup_trace, krup_ks, gen_ks, rna_per_sec, ...
+                              krup_trace, coop_coeff, krup_ks, gen_ks, rna_per_sec, ...
                               fluo_per_rna, MS2_rise_time,noise)
 %Generates individual traces with the gillespie algorithm (ignores sister
 % chormatids for now)
@@ -34,7 +34,7 @@ naive_states(1) = 1; % trace always starts off as off
 
 % variable to keep track of the current reaction time
 t = 0;
-cur_krup = krup_trace(1);
+cur_krup = krup_trace(1) ^ coop_coeff;
 
 while (t < t_max)
     
@@ -51,7 +51,7 @@ while (t < t_max)
     if dt >= time_to_krup_change
         dt = time_to_krup_change;
         naive_states = [naive_states naive_states(end)];
-        cur_krup = krup_trace(min(ceil(t / 20 + .001), length(krup_trace)));
+        cur_krup = krup_trace(min(ceil(t / 20 + .001), length(krup_trace))) ^ coop_coeff;
     else
         rates = trans_mat(:,naive_states(end));
         rates(naive_states(end)) = 0;

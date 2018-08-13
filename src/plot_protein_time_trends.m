@@ -1,6 +1,7 @@
 % plots ap/time trends of kruppel data
 
-sets_to_use = 1:3;
+sets_to_use = [1:6 8:12];
+%data_path = '../dat/Kruppel_eve2_pass1/adjust_traces.mat';
 data_path = '../dat/Kruppel_eve2_pass1/inference_traces_Kruppel_eve2_pass1_dT20.mat';
 fig_path = '../fig/Kruppel_eve2_pass1/';
 mkdir(fig_path);
@@ -37,7 +38,7 @@ end
 % get plots of time trends of for each ap position for every set
 ap_step = 1;
 time_step = 180;
-ap_bins = -3:ap_step:9;
+ap_bins = -5:ap_step:9;
 time_bins = 0:time_step:3000;
 consolidated_fluo = struct;
 idx = 1;
@@ -67,7 +68,7 @@ for set = sets_to_use
     end
 end
 
-for ap = [-3 0 3 6 9]
+for ap = -5:0
     figure();
     relevant_sets = consolidated_fluo([consolidated_fluo.ap] == ap);
     leg = cell(1, length(relevant_sets));

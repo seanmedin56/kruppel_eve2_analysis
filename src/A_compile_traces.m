@@ -22,7 +22,7 @@ mkdir([ap_pos_path '/stripe_fits']);
 mkdir(fluo_path);
 %%% cleaning params
 keyword = 'Eve2'; % Keyword to ensure only sets from current project are pulled
-include_vec = [1:3]; %data set numbers to include
+include_vec = [1:6, 8:12]; %data set numbers to include
 % show_ap_fit_figs = 0;
 snippet_size = 15; % particles within snippet/2+1 are at risk for tracking issues
 % pre_post_padding = 10; % max mun frames for which nucleus can be MIA at start or end
@@ -432,7 +432,7 @@ for i = 1:length(include_vec)
     % Filter for times later than specified maturation time. Also remove
     % obs with nonpositive fluorescence
     filter = (time_all>min_mat_time)&(fluo_all>0);
-    fluo_all = fluo_all(filter);      
+    fluo_all = fluo_all(filter) / 1000;      
     time_all = time_all(filter);
     xp_all = xp_all(filter);
     yp_all = yp_all(filter);    

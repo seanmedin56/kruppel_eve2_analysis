@@ -11,7 +11,7 @@ max_bin_size = 3;
 FOV_edge_padding = 10; % pixels
 %------------------------Import Raw Trace Set------------------------%
 %ID's of sets to include
-include_vec = 1:3;
+include_vec = [1:6, 8:12];
 project = 'Kruppel_eve2_pass1';
 print_traces = 0; %Output PNG files for traces?
 
@@ -52,11 +52,16 @@ for i = 1:length(trace_struct)
     trace3 = temp.fluo3; %3 slice trace should be identical to single in presence/absence
     protein = temp.protein; % full protein trace including NaNs
     nuc = nucleus_struct([nucleus_struct.Nucleus] == temp.Nucleus);
-    
+    nuc = nuc([nuc.setID] == temp.setID);
     % skips trace if they get too close to the edge
     if sum([nuc.xPos] < 20 | [nuc.xPos] > 492 | ...
             [nuc.yPos] < 20 | [nuc.yPos] > 492) + sum([temp.xPos] < 20 |...
-            [temp.yPos] < 20 | [temp.xPos] > 492 | [temp.yPos] > 492) > 0
+            [temp.yPos] < 20 | [temp.xPos] > 492 | [temp.yPos] > 492) > 0 ...
+            || length(nuc) > 1 || length(protein) < 10 || ...
+            ~isempty(find(diff(temp.time) < 0))
+        if length(nuc) > 1
+            disp('multiple nuclei');
+        end
         continue;
     end
 

@@ -5,7 +5,7 @@
 % loads data
 data_path = '../dat/Kruppel_eve2_pass1/inference_traces_Kruppel_eve2_pass1_dT20.mat';
 load(data_path);
-sets_to_use = 1:3;
+sets_to_use = [1:6 8:12];
 figure();
 for set = sets_to_use
     
@@ -58,16 +58,23 @@ xlabel('mean fluorescence');
 ylabel('mean fluorescence distance');
 
 % plots histogram of distance between adjacent time points for each set
+means = zeros(1, length(sets_to_use));
+stds = zeros(1, length(sets_to_use));
+idx = 0;
 for set = sets_to_use
+    idx = idx + 1;
     adj_points = [];
     trace_struct_set = trace_struct_final([trace_struct_final.setID] == set);
     for trace = trace_struct_set
-        adj_points = [adj_points diff(trace.protein_interp)];
+        %p = polyfit(1:length(trace.protein_interp), trace.protein_interp,3);
+        %adj_points = [adj_points trace.protein_interp - ...
+        %    polyval(p, 1:length(trace.protein_interp))];
+        adj_points = [adj_points diff(trace.protein_interp)];    
     end
     figure();
     histogram(adj_points);
     title(['Adjacent Times Fluo Distribution Set ' num2str(set)]);
-    display(mean(adj_points));
-    display(std(adj_points));
+    means(idx) = mean(adj_points);
+    stds(idx) = std(adj_points);
 end
 
