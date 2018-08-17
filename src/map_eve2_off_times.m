@@ -3,14 +3,14 @@
 % for more than 4 time steps)
 
 %imports data
-%data_path = '../dat/Kruppel_eve2_pass1/inference_traces_Kruppel_eve2_pass1_dT20.mat';
-%load(data_path);
+data_path = '../dat/Kruppel_eve2_pass1/inference_traces_Kruppel_eve2_pass1_dT20.mat';
+load(data_path);
 
 sets_to_use = [0]; %set 0 is all of them
-%all_sets = [1 4:6 8:12];
-all_sets = 1;
+all_sets = [1 4:6 8:12];
+%all_sets = 1;
 thresh = 0;
-coeff = 1;
+coeff = 2;
 normalizer = 100;
 
 leg = cell(1,length(sets_to_use));

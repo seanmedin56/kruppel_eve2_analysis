@@ -149,6 +149,7 @@ for i = 1:length(trace_struct)
         int_time = int_time(ismember(all_frames,cp_frames));
         temp.([interp_fields{j} '_interp']) = interp1(int_time,int_vec,time_interp);
     end     
+    trace1_interp(isnan(trace1_interp)) = 0;
     temp.fluo_interp = trace1_interp;
     temp.fluo_interp3 = trace3_interp;
     temp.time_interp = time_interp;
